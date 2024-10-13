@@ -1,6 +1,6 @@
 # Docker Embedded
 
-Command reference:
+Command reference: [cheatsheet](CHEATSHEET.md)
 
 ## The three words
 
