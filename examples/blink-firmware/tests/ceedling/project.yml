@@ -1,0 +1,16 @@
+---
+:project:
+  :build_root: build
+  :test_file_prefix: test_
+  :default_tasks:
+    - test:all
+
+:paths:
+  :test:
+    - test/**
+  :source:
+    - ../../Src/**
+  :include:
+    - ../../Inc/**
+
+...
