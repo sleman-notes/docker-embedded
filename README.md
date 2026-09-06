@@ -157,3 +157,36 @@ RUN apt-get update && apt-get install -y --no-install-recommends make \
 The "--no-install-recommends" and "rm -rf" saves a few hundred MB.
 
 ## Build a second image on top of the first
+
+Now, for run unit tests, we will need Ruby and Ceedling (but we already have
+make, python and the toolchain in an image). We do not need install them twice.
+
+[images/ceedling/Dockerfile](images/ceedling/Dockerfile)
+
+```dockerfile
+FROM firmware-build:1.0
+```
+
+also could be (with the repo already exists in dockerhub)
+
+```dockerfile
+FROM user/firmware-build:1.0
+```
+
+FROM inherits **everything**: installed packages, ENV, WORKDIR, all of it. We
+only add what is missing.
+
+```bash
+docker build -t firmware-ceedling:1.0 images/ceedling
+
+cd examples/blink-firmare
+docker run --rm -v "$PWD":/work -w /work firmware-ceedling:1.0 ceedling test:all
+```
+
+the firmware-ceedling shares every layer with firmware-build, only the Ruby
+layer is new. We can confirm that with "docker system df".
+
+That sharing is why we should have several small purpose-build images rather
+than one giant image that does everything.
+
+## Build a third image from scratch
