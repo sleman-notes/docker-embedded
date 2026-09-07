@@ -190,3 +190,19 @@ That sharing is why we should have several small purpose-build images rather
 than one giant image that does everything.
 
 ## Build a third image from scratch
+
+The [images/cpputest/Dockerfile](images/cpputest/Dockerfile) does the same job
+as image 2 but starts "FROM ubuntu:24.04", so it repeats the entire toolchain
+install.
+
+```bash
+docker build -t firmware-cpputest:1.0 images/cpputest
+
+cd examples/blink-firmware
+docker run --rm -it -v "$PWD":/work -w /work/tests/cpputest firmware-cpputest:1.0 make
+```
+
+Note the mount, the **parent** folder is mounted, and the working directory is
+the subfolder.
+
+## Tags mean something
