@@ -206,3 +206,27 @@ Note the mount, the **parent** folder is mounted, and the working directory is
 the subfolder.
 
 ## Tags mean something
+
+firmware-build:1.0 is fine while we have one toolchain. Now, once we have two,
+it would be nice to put the contents in the tag, like:
+
+```
+firmware-build:gcc13     firmware-build:gcc10
+```
+
+We must never rely on ":lastest". Because it can silently moves from GCC 13 to
+GCC 14, a firmware that compile last month may not compile today and you will
+have no idea why.
+
+For publishing in docker hub, we can use:
+
+```bash
+docker login -u USER
+docker tag firmware-build:1.0 USER/firmware-build:1.0
+docker push USER/firmware-build:1.0
+```
+
+Elsewhere: docker pull USER/firmware-build:1.0. "docker run" pulls automatically
+if the image is missing locally.
+
+## Fix the root-owned files
