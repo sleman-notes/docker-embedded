@@ -230,3 +230,26 @@ Elsewhere: docker pull USER/firmware-build:1.0. "docker run" pulls automatically
 if the image is missing locally.
 
 ## Fix the root-owned files
+
+By default the container runs as root, so every .o and .elf it creates belongs
+to root on our machine and or editor cannot edit or delete them.
+
+```bash
+docker run --rm -v "$PWD":/work -w /work --user "$(id -u):$(id -g)" firmware-build:1.0
+```
+
+--user UID:GID runs the process as you. 
+
+Is important to remember that every file and directory has an owner, a group,
+and three permission sets (owner, group, others) each with read (r, 4), write
+(w, 2) and execute (x, 1). Adding the values gives the octal used by chmod:644 
+which means that owner reads/write and everyone ele only read; 755 adds execute,
+which on a directory means permission to enter it. Ownership is changed with
+"chown user:group", and "ls -l" shows the result as drwxrwxr-x. If we accidentely
+create file as root with the docker, the easy way to fix for our user is:
+
+```bash
+sudo chown -R $USER:$USER ./folder
+```
+
+## Stop typing the long command
