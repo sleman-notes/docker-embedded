@@ -253,3 +253,9 @@ sudo chown -R $USER:$USER ./folder
 ```
 
 ## Stop typing the long command
+
+We can wrap the command with a .sh, like run.sh to run isntead of "docker run".
+So we can also run thing like "./run.sh make". See
+[run.sh](examples/blink-firmware/run.sh).
+
+## Installing a toolchain by hand, then docker commit
