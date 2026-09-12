@@ -259,3 +259,78 @@ So we can also run thing like "./run.sh make". See
 [run.sh](examples/blink-firmware/run.sh).
 
 ## Installing a toolchain by hand, then docker commit
+
+Docker commit goes in other way, we can enter a running container with -it,
+install things by hand as if it were a normal machine, exit and freeze that
+container's filesystem into a new image. We can run:
+
+```bash
+docker build -t workbench:1.0 images/workbench
+```
+
+Then start without --rm and give it a name, so the container still exists on
+exit.
+
+```bash
+docker run -it --name workbench-gcc workbench:1.0 bash
+```
+
+Now as root we can install the toolchain by hand:
+
+```bash
+# Arm GNU Toolchain 15.2.Rel1 (GCC 15.2)
+wget htpps://oficialurl.com/file.tar.xz
+
+mkdir -p /opt/arm-gnu-15
+
+# -x extract, -J unpack .xz, -C into that dir.
+# --strip-components=1 drops the top folder inside the tarball, so you get
+# /opt/arm-gnu-15/bin instead of /opt/arm-gnu-15/arm-gnu-toolchain-15.2.rel1-.../bin
+tar -xJf arm-gnu-toolchain-15.2.rel1-x86_64-arm-none-eabi.tar.xz \
+    -C /opt/arm-gnu-15 --strip-components=1
+
+rm arm-gnu-toolchain-15.2.rel1-x86_64-arm-none-eabi.tar.xz
+
+export PATH=/opt/arm-gnu-15/bin:$PATH
+
+arm-none-eabi-gcc --version  # see if it worked
+echo $PATH                   # for next step
+exit
+```
+
+The container is stopped but still on disk, we can confirm with docker ps -a.
+
+To commit we should use something like this:
+
+```bash
+docker commit \
+  --change 'ENV PATH=/opt/arm-gnu-15/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' \
+  --change 'WORKDIR /work' \
+  --change 'CMD ["bash"]' \
+  toolchain-wip firmware-build:gcc15
+```
+
+Those --change flags are there because docker commit snapshot the filesystem,
+not the shell session. So the export we type lived only in that bash process and
+is gone.
+
+Important to say that to run the container stopped we can use 
+
+```bash
+docker start -ai <container_name_or_id>
+```
+
+and to stop if are running in background or remove the container, we could use
+these:
+
+```bash
+docker stop <container_id_or_name>
+docker rm <container_id_or_name>
+```
+
+Now we can test with:
+
+```bash
+cd examples/blink-firmware
+docker run --rm -it -v "$PWD":/work firmware-build:gcc15
+```
